@@ -5,7 +5,6 @@ dependencies:
 
 compiler:
   solc:
-    version: 0.6.10
     remappings:
       - '@chainlink=smartcontractkit/chainlink-brownie-contracts@0.2.2'
       - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@3.4.0'

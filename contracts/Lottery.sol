@@ -6,7 +6,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Lottery is Ownable {
     address payable[] public players;
+    address payable public recentWinner;
     uint256 public usdEntryFee;
+    uint256 private randNonce = 0;
     AggregatorV3Interface internal ethUsdPrice;
 
     // enum is a easier friendly way to represent ints, here: 0, 1, 2
@@ -47,5 +49,40 @@ contract Lottery is Ownable {
         lottery_state = LOTTERY_STATE.OPEN;
     }
 
-    function endLottery() public {}
+    function endLottery() public onlyOwner {
+        // not a method to use in mainnet chain, not safe
+        require(
+            lottery_state == LOTTERY_STATE.OPEN,
+            "Lottery needs to be open first"
+        );
+        lottery_state = LOTTERY_STATE.CALCULATING_WINNER;
+
+        uint256 randomNum = uint256(
+            keccak256(
+                (
+                    abi.encodePacked(
+                        randNonce,
+                        msg.sender,
+                        block.difficulty,
+                        block.timestamp
+                    )
+                )
+            )
+        );
+
+        randNonce++;
+        uint256 indexOfWinner = randomNum % players.length;
+        recentWinner = players[indexOfWinner];
+        recentWinner.transfer(address(this).balance);
+
+        players = new address payable[](0);
+        lottery_state = LOTTERY_STATE.CLOSED;
+    }
+
+    function selectWinner() private {
+        require(
+            lottery_state == LOTTERY_STATE.CALCULATING_WINNER,
+            "Cannot select winner yet"
+        );
+    }
 }
