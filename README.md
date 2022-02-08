@@ -6,7 +6,8 @@ Goal:
 3. The lottery will select a random winner
 
 Testing strategy:
-1.'mainnet-fork'
-2.'development' with mocks
-3.'testnet'
+
+1. 'mainnet-fork'
+2. 'development' with mocks
+3. 'testnet'
 

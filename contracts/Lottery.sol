@@ -35,10 +35,10 @@ contract Lottery is Ownable {
     function getEntranceFee() public view returns (uint256) {
         //
         (, int256 price, , , ) = ethUsdPrice.latestRoundData();
-        uint256 adjustedPrice = uint256(price) * 10**12; // 18 decimals now
+        uint256 adjustedPrice = uint256(price) * 10**10; // 18 decimals now
         // $usd50 is entrance fee, price will be eth price in $usd
         uint256 costToEnter = (usdEntryFee * 10**18) / adjustedPrice;
-        return costToEnter;
+        return uint256(costToEnter);
     }
 
     function startLottery() public onlyOwner {

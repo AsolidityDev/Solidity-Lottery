@@ -14,7 +14,7 @@ DECIMALS = 8
 STARTING_PRICE = 200000000000
 
 LOCAL_BLOCKCHAIN_ENVIRONMENTS = ["development", "ganache_local"]
-FORKED_LOCAL_ENVIRONMENTS = ["mainnet-fork-dev"]
+FORKED_LOCAL_ENVIRONMENTS = ["mainnet-fork"]
 
 
 def get_account(index=None, id=None):
@@ -30,6 +30,8 @@ def get_account(index=None, id=None):
         or network.show_active() in FORKED_LOCAL_ENVIRONMENTS
     ):
         return accounts[0]
+
+    return accounts.add(config["wallets"]["from_key"])
 
 
 contract_to_mock = {"eth_usd_price": MockV3Aggregator, "link_token": LinkToken}
@@ -63,15 +65,16 @@ def get_contract(contract_name):
     return contract
 
 
-def deploy_mock():
+def deploy_mock(decimals=DECIMALS, initial_value=STARTING_PRICE):
     account = get_account()
     print(f"The active network is {network.show_active()}")
-    print("Deploying mock...")
+    print("Deploying mock AGgregator")
     mock_aggregator = MockV3Aggregator.deploy(
-        DECIMALS, Web3.toWei(STARTING_PRICE, "ether"), {"from": account}
+        DECIMALS, STARTING_PRICE, {"from": account}
     )
+    print("deploying linktoken mock")
     link_token = LinkToken.deploy({"from": account})
-    print("Mock deployed")
+    print("Mocks deployed")
 
 
 def fund_with_link(
