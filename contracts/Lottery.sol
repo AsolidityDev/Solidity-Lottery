@@ -27,7 +27,8 @@ contract Lottery is Ownable {
 
     function enter() public payable {
         // $50 minimum
-        require(lottery_state == LOTTERY_STATE.OPEN);
+        //lottery_state = LOTTERY_STATE.OPEN;
+        require(lottery_state == LOTTERY_STATE.OPEN, "Needs to be open first");
         require(msg.value >= getEntranceFee(), "Not enough ETH!");
         players.push(msg.sender);
     }
@@ -69,20 +70,11 @@ contract Lottery is Ownable {
                 )
             )
         );
-
         randNonce++;
         uint256 indexOfWinner = randomNum % players.length;
         recentWinner = players[indexOfWinner];
         recentWinner.transfer(address(this).balance);
 
         players = new address payable[](0);
-        lottery_state = LOTTERY_STATE.CLOSED;
-    }
-
-    function selectWinner() private {
-        require(
-            lottery_state == LOTTERY_STATE.CALCULATING_WINNER,
-            "Cannot select winner yet"
-        );
     }
 }

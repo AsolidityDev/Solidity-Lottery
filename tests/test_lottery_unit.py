@@ -33,11 +33,59 @@ def test_cant_enter_unless_started():
     # Arrange
     if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
         pytest.skip()
-    account = get_account()
     lottery = deploy_lottery()
-    # lottery = Lottery[-1]
-    print(lottery)
     # Act / Assert
-    with brownie.reverts():
-        # with pytest.reverts():
+    with pytest.raises(Exception):
         lottery.enter({"from": get_account(), "value": lottery.getEntranceFee()})
+
+
+def test_can_start_and_enter_lottery():
+    # Arrange
+    if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        pytest.skip()
+    lottery = deploy_lottery()
+    account = get_account()
+    lottery.startLottery({"from": account})
+    # Act
+    lottery.enter({"from": account, "value": lottery.getEntranceFee()})
+    # Assert
+    assert lottery.players(0) == account
+
+
+def test_can_end_lottery():
+    # Arrange
+    if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        pytest.skip()
+    lottery = deploy_lottery()
+    account = get_account()
+
+    # Act
+    lottery.startLottery({"from": account})
+    lottery.enter({"from": account, "value": lottery.getEntranceFee()})
+    lottery.endLottery({"from": account})
+    # Assert
+    assert lottery.lottery_state() == 2
+
+
+def test_can_pick_winner_correctly():
+    # Arrange
+    if network.show_active() not in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        pytest.skip()
+    lottery = deploy_lottery()
+    account = get_account()
+
+    # Act
+    lottery.startLottery({"from": account})
+    lottery.enter({"from": account, "value": lottery.getEntranceFee()})
+    lottery.enter({"from": get_account(index=1), "value": lottery.getEntranceFee()})
+    lottery.enter({"from": get_account(index=2), "value": lottery.getEntranceFee()})
+    lottery.enter({"from": get_account(index=3), "value": lottery.getEntranceFee()})
+
+    lottery.endLottery({"from": account})
+
+    starting_balance = account.balance()
+    balance_of_lottery = lottery.balance()
+
+    assert lottery.recentWinner() == account
+    assert lottery.balance() == 0
+    assert account.balance() == starting_balance + balance_of_lottery
